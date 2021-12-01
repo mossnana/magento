@@ -1,0 +1,50 @@
+version: "3.5"
+
+services:
+  magento:
+    build: .
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MAGENTO_DATABASE_HOST=mariadb
+      - MAGENTO_DATABASE_PORT_NUMBER=3306
+      - MARIADB_ROOT_PASSWORD=superman
+      - MAGENTO_DATABASE_USER=admin
+      - MAGENTO_DATABASE_PASSWORD=superman
+      - MAGENTO_DATABASE_NAME=magento
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - BITNAMI_DEBUG=true
+    ports:
+      - "80:8080"
+      - "433:8433"
+    networks:
+      - "magento_mariadb"
+      - "magento_elasticsearch"
+    depends_on:
+      - mariadb
+      - elasticsearch
+  mariadb:
+    image: mariadb:10.2.41
+    environment:
+      - MARIADB_USER=admin
+      - MARIADB_PASSWORD=superman
+      - MARIADB_ROOT_PASSWORD=superman
+      - MARIADB_DATABASE=magento
+    volumes:
+      - "./data/mariadb:/bitnami/mariadb"
+    networks:
+      - "magento_mariadb"
+  elasticsearch:
+    image: elasticsearch:7.14.2
+    environment:
+      - discovery.type=single-node
+    networks:
+      - "magento_elasticsearch"
+    volumes:
+      - './data/elasticsearch:/bitnami/elasticsearch/data'
+
+networks:
+  magento_mariadb:
+    external: true
+  magento_elasticsearch:
+    external: true
